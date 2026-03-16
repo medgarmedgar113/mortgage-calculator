@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mortgage Calculator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: #e2e8f0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #f1f5f9;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 15px;
+      margin-bottom: 36px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 700px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 28px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #f1f5f9;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper .prefix,
+    .input-wrapper .suffix {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 15px;
+      font-weight: 500;
+      pointer-events: none;
+    }
+
+    .input-wrapper .prefix { left: 14px; }
+    .input-wrapper .suffix { right: 14px; }
+
+    input[type="number"], select {
+      width: 100%;
+      padding: 12px 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 16px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .has-prefix input { padding-left: 30px; }
+    .has-suffix input { padding-right: 30px; }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    select option { background: #1e293b; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 4px;
+    }
+
+    button:hover { background: #2563eb; }
+    button:active { transform: scale(0.98); }
+
+    /* Results */
+    .results { display: none; }
+    .results.visible { display: block; }
+
+    .payment-hero {
+      text-align: center;
+      padding: 8px 0 20px;
+    }
+
+    .payment-hero .label {
+      font-size: 13px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .payment-hero .amount {
+      font-size: 42px;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .payment-hero .amount small {
+      font-size: 16px;
+      color: #64748b;
+      font-weight: 400;
+    }
+
+    .breakdown {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .stat-box .stat-label {
+      font-size: 12px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .stat-box .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .stat-box .stat-value.green { color: #34d399; }
+    .stat-box .stat-value.amber { color: #fbbf24; }
+    .stat-box .stat-value.red { color: #f87171; }
+    .stat-box .stat-value.blue { color: #60a5fa; }
+
+    /* Donut chart */
+    .chart-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin: 20px 0;
+    }
+
+    .donut-container { position: relative; width: 140px; height: 140px; }
+
+    .donut-container svg { transform: rotate(-90deg); }
+
+    .chart-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Amortization table */
+    .amort-section {
+      margin-top: 32px;
+    }
+
+    .amort-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .amort-toggle {
+      display: inline-block;
+      font-size: 13px;
+      color: #3b82f6;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+
+    .amort-toggle:hover { text-decoration: underline; }
+
+    .table-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+      border-radius: 10px;
+      border: 1px solid #334155;
+    }
+
+    .table-wrap::-webkit-scrollbar { width: 6px; }
+    .table-wrap::-webkit-scrollbar-track { background: #1e293b; }
+    .table-wrap::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: #334155;
+      padding: 10px 12px;
+      text-align: right;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: #cbd5e1;
+    }
+
+    thead th:first-child { text-align: center; }
+
+    tbody td {
+      padding: 9px 12px;
+      text-align: right;
+      border-bottom: 1px solid #1e293b;
+      color: #94a3b8;
+    }
+
+    tbody td:first-child { text-align: center; color: #64748b; }
+
+    tbody tr:hover td { background: #1e293b; }
+
+    .view-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .view-btn {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 13px;
+      background: #334155;
+      border-radius: 8px;
+      margin-top: 0;
+    }
+
+    .view-btn.active { background: #3b82f6; }
+
+    .export-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .btn-export {
+      width: auto;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      background: #059669;
+      border-radius: 8px;
+      margin-top: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-export:hover { background: #047857; }
+
+    .btn-export svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Mortgage Calculator</h1>
+    <p class="subtitle">Estimate your monthly payments and total cost of your home loan</p>
+
+    <div class="main-grid">
+      <!-- Input Card -->
+      <div class="card">
+        <h2>Loan Details</h2>
+
+        <div class="form-group">
+          <label>Home Price</label>
+          <div class="input-wrapper has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="homePrice" value="350000" min="0" step="1000">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Down Payment</label>
+          <div class="row-2">
+            <div class="input-wrapper has-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="downPayment" value="70000" min="0" step="1000">
+            </div>
+            <div class="input-wrapper has-suffix">
+              <input type="number" id="downPercent" value="20" min="0" max="100" step="0.5">
+              <span class="suffix">%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Interest Rate (Annual)</label>
+          <div class="input-wrapper has-suffix">
+            <input type="number" id="interestRate" value="6.5" min="0" max="30" step="0.125">
+            <span class="suffix">%</span>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="form-group">
+            <label>Loan Term</label>
+            <select id="loanTerm">
+              <option value="30" selected>30 years</option>
+              <option value="20">20 years</option>
+              <option value="15">15 years</option>
+              <option value="10">10 years</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Property Tax / yr</label>
+            <div class="input-wrapper has-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="propertyTax" value="4200" min="0" step="100">
+            </div>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="form-group">
+            <label>Home Insurance / yr</label>
+            <div class="input-wrapper has-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="insurance" value="1200" min="0" step="100">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>HOA / month</label>
+            <div class="input-wrapper has-prefix">
+              <span class="prefix">$</span>
+              <input type="number" id="hoa" value="0" min="0" step="25">
+            </div>
+          </div>
+        </div>
+
+        <button onclick="calculate()">Calculate</button>
+      </div>
+
+      <!-- Results Card -->
+      <div class="card results" id="resultsCard">
+        <h2>Your Estimate</h2>
+
+        <div class="payment-hero">
+          <div class="label">Monthly Payment</div>
+          <div class="amount" id="monthlyPayment">$0 <small>/mo</small></div>
+        </div>
+
+        <div class="breakdown">
+          <div class="stat-box">
+            <div class="stat-label">Principal & Interest</div>
+            <div class="stat-value green" id="piPayment">$0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Tax & Insurance</div>
+            <div class="stat-value amber" id="tiPayment">$0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Total Interest Paid</div>
+            <div class="stat-value red" id="totalInterest">$0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Total Loan Cost</div>
+            <div class="stat-value blue" id="totalCost">$0</div>
+          </div>
+        </div>
+
+        <div class="chart-section">
+          <div class="donut-container">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="56" fill="none" stroke="#1e293b" stroke-width="20"/>
+              <circle id="arcPrincipal" cx="70" cy="70" r="56" fill="none" stroke="#34d399" stroke-width="20"
+                stroke-dasharray="0 352" stroke-linecap="round"/>
+              <circle id="arcInterest" cx="70" cy="70" r="56" fill="none" stroke="#f87171" stroke-width="20"
+                stroke-dasharray="0 352" stroke-linecap="round"/>
+              <circle id="arcTaxIns" cx="70" cy="70" r="56" fill="none" stroke="#fbbf24" stroke-width="20"
+                stroke-dasharray="0 352" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#34d399"></span> Principal</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f87171"></span> Interest</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span> Tax & Ins.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Amortization Table -->
+    <div class="results" id="amortSection">
+      <div class="card amort-section">
+        <h2>Amortization Schedule</h2>
+
+        <div class="view-toggle">
+          <button class="view-btn active" id="btnYearly" onclick="setView('yearly')">Yearly</button>
+          <button class="view-btn" id="btnMonthly" onclick="setView('monthly')">Monthly</button>
+        </div>
+
+        <div class="export-bar">
+          <button class="btn-export" onclick="exportToExcel('yearly')">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM9.5 11.5l2 3.5-2 3.5h1.7l1.3-2.3 1.3 2.3h1.7l-2-3.5 2-3.5h-1.7L12.5 14l-1.3-2.5H9.5z"/></svg>
+            Export Yearly
+          </button>
+          <button class="btn-export" onclick="exportToExcel('monthly')">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM9.5 11.5l2 3.5-2 3.5h1.7l1.3-2.3 1.3 2.3h1.7l-2-3.5 2-3.5h-1.7L12.5 14l-1.3-2.5H9.5z"/></svg>
+            Export Monthly
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th id="colPeriod">Year</th>
+                <th>Payment</th>
+                <th>Principal</th>
+                <th>Interest</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody id="amortBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const fmt = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    const fmtFull = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    let scheduleData = [];
+    let currentView = 'yearly';
+
+    // Sync down payment dollar ↔ percent
+    $('homePrice').addEventListener('input', syncDownFromPercent);
+    $('downPayment').addEventListener('input', syncPercentFromDown);
+    $('downPercent').addEventListener('input', syncDownFromPercent);
+
+    function syncDownFromPercent() {
+      const price = parseFloat($('homePrice').value) || 0;
+      const pct = parseFloat($('downPercent').value) || 0;
+      $('downPayment').value = Math.round(price * pct / 100);
+    }
+
+    function syncPercentFromDown() {
+      const price = parseFloat($('homePrice').value) || 0;
+      const down = parseFloat($('downPayment').value) || 0;
+      if (price > 0) $('downPercent').value = (down / price * 100).toFixed(1);
+    }
+
+    function calculate() {
+      const price = parseFloat($('homePrice').value) || 0;
+      const down = parseFloat($('downPayment').value) || 0;
+      const rate = parseFloat($('interestRate').value) || 0;
+      const years = parseInt($('loanTerm').value);
+      const taxYr = parseFloat($('propertyTax').value) || 0;
+      const insYr = parseFloat($('insurance').value) || 0;
+      const hoaMo = parseFloat($('hoa').value) || 0;
+
+      const principal = price - down;
+      const months = years * 12;
+      const monthlyRate = rate / 100 / 12;
+
+      let piMonthly;
+      if (monthlyRate === 0) {
+        piMonthly = principal / months;
+      } else {
+        piMonthly = principal * (monthlyRate * Math.pow(1 + monthlyRate, months)) /
+                    (Math.pow(1 + monthlyRate, months) - 1);
+      }
+
+      const taxInsMo = taxYr / 12 + insYr / 12 + hoaMo;
+      const totalMonthly = piMonthly + taxInsMo;
+
+      // Build amortization schedule
+      scheduleData = [];
+      let balance = principal;
+      let totalInterestPaid = 0;
+
+      for (let m = 1; m <= months; m++) {
+        const intPmt = balance * monthlyRate;
+        const prinPmt = piMonthly - intPmt;
+        balance = Math.max(0, balance - prinPmt);
+        totalInterestPaid += intPmt;
+
+        scheduleData.push({
+          month: m,
+          year: Math.ceil(m / 12),
+          payment: piMonthly,
+          principal: prinPmt,
+          interest: intPmt,
+          balance: balance
+        });
+      }
+
+      const totalCost = totalMonthly * months;
+      const totalTaxIns = taxInsMo * months;
+
+      // Update UI
+      $('monthlyPayment').innerHTML = `${fmt(totalMonthly)} <small>/mo</small>`;
+      $('piPayment').textContent = fmt(piMonthly) + '/mo';
+      $('tiPayment').textContent = fmt(taxInsMo) + '/mo';
+      $('totalInterest').textContent = fmt(totalInterestPaid);
+      $('totalCost').textContent = fmt(totalCost);
+
+      // Donut chart
+      const circ = 2 * Math.PI * 56;
+      const totalAll = principal + totalInterestPaid + totalTaxIns;
+      const pPct = principal / totalAll;
+      const iPct = totalInterestPaid / totalAll;
+      const tPct = totalTaxIns / totalAll;
+
+      const gap = 4;
+      const pLen = pPct * circ - gap;
+      const iLen = iPct * circ - gap;
+      const tLen = tPct * circ - gap;
+
+      $('arcPrincipal').setAttribute('stroke-dasharray', `${pLen} ${circ - pLen}`);
+      $('arcPrincipal').setAttribute('stroke-dashoffset', '0');
+
+      $('arcInterest').setAttribute('stroke-dasharray', `${iLen} ${circ - iLen}`);
+      $('arcInterest').setAttribute('stroke-dashoffset', `${-(pLen + gap)}`);
+
+      $('arcTaxIns').setAttribute('stroke-dasharray', `${tLen} ${circ - tLen}`);
+      $('arcTaxIns').setAttribute('stroke-dashoffset', `${-(pLen + gap + iLen + gap)}`);
+
+      // Show results
+      $('resultsCard').classList.add('visible');
+      $('amortSection').classList.add('visible');
+      renderTable();
+    }
+
+    function setView(view) {
+      currentView = view;
+      $('btnYearly').classList.toggle('active', view === 'yearly');
+      $('btnMonthly').classList.toggle('active', view === 'monthly');
+      $('colPeriod').textContent = view === 'yearly' ? 'Year' : 'Month';
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = $('amortBody');
+
+      if (currentView === 'monthly') {
+        tbody.innerHTML = scheduleData.map(r => `
+          <tr>
+            <td>${r.month}</td>
+            <td>${fmtFull(r.payment)}</td>
+            <td>${fmtFull(r.principal)}</td>
+            <td>${fmtFull(r.interest)}</td>
+            <td>${fmtFull(r.balance)}</td>
+          </tr>
+        `).join('');
+      } else {
+        const yearly = [];
+        let yPmt = 0, yPrin = 0, yInt = 0;
+
+        scheduleData.forEach((r, i) => {
+          yPmt += r.payment;
+          yPrin += r.principal;
+          yInt += r.interest;
+
+          if ((i + 1) % 12 === 0 || i === scheduleData.length - 1) {
+            yearly.push({
+              year: r.year,
+              payment: yPmt,
+              principal: yPrin,
+              interest: yInt,
+              balance: r.balance
+            });
+            yPmt = 0; yPrin = 0; yInt = 0;
+          }
+        });
+
+        tbody.innerHTML = yearly.map(r => `
+          <tr>
+            <td>${r.year}</td>
+            <td>${fmt(r.payment)}</td>
+            <td>${fmt(r.principal)}</td>
+            <td>${fmt(r.interest)}</td>
+            <td>${fmt(r.balance)}</td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    function exportToExcel(mode) {
+      if (!scheduleData.length) return;
+
+      const wb = XLSX.utils.book_new();
+      const price = parseFloat($('homePrice').value) || 0;
+      const down = parseFloat($('downPayment').value) || 0;
+      const rate = parseFloat($('interestRate').value) || 0;
+      const years = parseInt($('loanTerm').value);
+      const loanAmt = price - down;
+
+      // --- Summary Sheet ---
+      const summaryData = [
+        ['Mortgage Summary'],
+        [],
+        ['Loan Details', ''],
+        ['Home Price', price],
+        ['Down Payment', down],
+        ['Down Payment %', (down / price)],
+        ['Loan Amount', loanAmt],
+        ['Interest Rate', rate / 100],
+        ['Loan Term (Years)', years],
+        [],
+        ['Monthly Payment Breakdown', ''],
+        ['Principal & Interest', parseFloat($('piPayment').textContent.replace(/[^0-9.-]/g, ''))],
+        ['Tax & Insurance', parseFloat($('tiPayment').textContent.replace(/[^0-9.-]/g, ''))],
+        ['Total Monthly Payment', parseFloat($('monthlyPayment').textContent.replace(/[^0-9.-]/g, ''))],
+        [],
+        ['Totals Over Loan Life', ''],
+        ['Total Interest Paid', parseFloat($('totalInterest').textContent.replace(/[^0-9.-]/g, ''))],
+        ['Total Loan Cost', parseFloat($('totalCost').textContent.replace(/[^0-9.-]/g, ''))]
+      ];
+
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+      wsSummary['!cols'] = [{ wch: 24 }, { wch: 18 }];
+
+      // Format currency cells on summary
+      const currFmt = '$#,##0';
+      const pctFmt = '0.0%';
+      ['B4','B5','B7'].forEach(c => { if(wsSummary[c]) wsSummary[c].z = currFmt; });
+      if(wsSummary['B6']) wsSummary['B6'].z = pctFmt;
+      if(wsSummary['B8']) wsSummary['B8'].z = pctFmt;
+      ['B12','B13','B14','B17','B18'].forEach(c => { if(wsSummary[c]) wsSummary[c].z = '$#,##0.00'; });
+
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+      // --- Amortization Sheet ---
+      const numFmt = '$#,##0.00';
+
+      if (mode === 'monthly') {
+        const header = ['Month', 'Payment', 'Principal', 'Interest', 'Remaining Balance'];
+        const rows = scheduleData.map(r => [r.month, r.payment, r.principal, r.interest, r.balance]);
+        const wsAmort = XLSX.utils.aoa_to_sheet([header, ...rows]);
+        wsAmort['!cols'] = [{ wch: 8 }, { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 18 }];
+
+        // Apply currency format to all data rows
+        for (let i = 2; i <= rows.length + 1; i++) {
+          ['B','C','D','E'].forEach(col => {
+            const ref = col + i;
+            if (wsAmort[ref]) wsAmort[ref].z = numFmt;
+          });
+        }
+
+        XLSX.utils.book_append_sheet(wb, wsAmort, 'Monthly Amortization');
+      } else {
+        const header = ['Year', 'Total Payment', 'Total Principal', 'Total Interest', 'Remaining Balance'];
+        const yearly = [];
+        let yPmt = 0, yPrin = 0, yInt = 0;
+        scheduleData.forEach((r, i) => {
+          yPmt += r.payment; yPrin += r.principal; yInt += r.interest;
+          if ((i + 1) % 12 === 0 || i === scheduleData.length - 1) {
+            yearly.push([r.year, yPmt, yPrin, yInt, r.balance]);
+            yPmt = 0; yPrin = 0; yInt = 0;
+          }
+        });
+
+        const wsAmort = XLSX.utils.aoa_to_sheet([header, ...yearly]);
+        wsAmort['!cols'] = [{ wch: 8 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 18 }];
+
+        for (let i = 2; i <= yearly.length + 1; i++) {
+          ['B','C','D','E'].forEach(col => {
+            const ref = col + i;
+            if (wsAmort[ref]) wsAmort[ref].z = numFmt;
+          });
+        }
+
+        XLSX.utils.book_append_sheet(wb, wsAmort, 'Yearly Amortization');
+      }
+
+      const filename = `mortgage_amortization_${mode}.xlsx`;
+      XLSX.writeFile(wb, filename);
+    }
+
+    // Run on load
+    calculate();
+  </script>
+</body>
+</html>
